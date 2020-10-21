@@ -13,8 +13,12 @@
                             {{ session('status') }}
                         </div>
                     @endif
-
+                    @auth
                     {{ __('You are logged in!') }}
+                    @else
+                    <a href="/login" class="btn btn-primary">Login</a>
+                    <a href="/register" class="btn btn-success">Register</a>
+                    @endauth
                 </div>
             </div>
         </div>

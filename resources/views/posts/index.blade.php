@@ -27,6 +27,7 @@
                 <div class="card-header">
                     <strong>{{ $post->title }}</strong>
                 </div>
+                <img style="height: 300px" class="card-img-top" src="{{ $post->takeImage() }}" alt="">
                 <div class="card-body">
                     <div>
                         {{ Str::limit($post->body, 100) }}
@@ -36,7 +37,9 @@
                 <div class="card-footer d-flex justify-content-between">
                     {{-- Published on {{ $post->created_at->format('d F Y') }} --}}
                     Published on {{ $post->created_at->diffForHumans() }}
+                    @can('update', $post)
                     <a href="/posts/{{ $post->slug }}/edit" class="btn btn-sm btn-success">Edit</a>
+                    @endcan
                 </div>
             </div>
         </div>
@@ -47,6 +50,14 @@
     </div>
     @else
     <div class="alert alert-warning text-center">There are no posts</div>
+    <div>
+        @auth
+        <a href="{{ route('posts.create') }}" class="btn btn-primary">Add New Post</a>
+        @else
+        <a href="/login" class="btn btn-primary">Login</a>
+        @endauth
+    </div>
     @endif
+
 </div>
 @endsection

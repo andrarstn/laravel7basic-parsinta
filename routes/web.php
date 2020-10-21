@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::view('/', 'home');
-
+Route::get('search', 'SearchController@post')->name('search.posts');
 Route::prefix('posts')->middleware('auth')->group(function(){
     Route::get('/', 'PostController@index')->name('posts.index')->withoutMiddleware('auth');
     
@@ -35,10 +35,6 @@ Route::get('categories/{category:slug}','CategoryController@show');
 //patch = edit sebagian field
 
 Route::view('about', 'about');
-
-Auth::routes();
-
-Route::get('/home', 'HomeController@index')->name('home');
 
 Auth::routes();
 

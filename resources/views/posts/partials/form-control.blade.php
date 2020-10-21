@@ -1,4 +1,17 @@
 <div class="form-group">
+    <div class="input-group @error('thumbnail')is-invalid @enderror">
+        <div class="custom-file">
+            <input type="file" class="custom-file-input" id="thumbnail" name="thumbnail">
+            <label class="custom-file-label" for="thumbnail">Choose file...</label>
+        </div>
+    </div>
+    @error('thumbnail')
+    <div class="invalid-feedback">
+        {{ $message }}
+    </div>
+    @enderror
+</div>
+<div class="form-group">
     <label for="title">Title</label>
     <input type="text" name="title" id="title" class="form-control @error('title')is-invalid @enderror"
         value="{{ old('title')??$post->title }}">

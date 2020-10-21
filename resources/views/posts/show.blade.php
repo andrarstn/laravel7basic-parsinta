@@ -2,7 +2,10 @@
 @section('title',$post->title )
 @section('content')
 <div class="container">
-    <h1>{{ $post->title }}</h1>
+    <h1 class="mb-0">{{ $post->title }}</h1>
+    <p class="text-secondary">
+        Wrote by: {{ $post->author->name }}
+    </p>
     <div class="text-secondary">
         <a href="/categories/{{ $post->category->slug }}">{{ $post->category->name }}</a>
         &middot;{{ $post->created_at->format('d F, Y') }}
@@ -10,14 +13,16 @@
         @foreach ($post->tags as $tag)
         <a href="">{{$tag->name}}</a>
         @endforeach
-        <hr>
+        <hr> 
     </div>
     <p>{{ $post->body }}</p>
+    @if(auth()->user()->id==$post->user_id)
+    {{-- @if(auth()->user()->is($post->author)) sama saja --}} 
     <!-- Button trigger modal -->
     <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal">
         Delete
     </button>
-
+    
     <!-- Modal -->
     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -68,5 +73,6 @@
             </div>
         </div>
     </div>
+    @endif
 </div>
 @endsection

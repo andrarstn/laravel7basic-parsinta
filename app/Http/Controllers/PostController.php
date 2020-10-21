@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PostRequest;
 use App\{Post, Category, Tag};
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -16,7 +17,9 @@ class PostController extends Controller
     public function index()
     {
         $posts = Post::orderBy('id', 'desc')->paginate(6);
-        return view('posts.index', compact('posts'));
+        return view('posts.index', [
+            'posts' => Post::with('author','tags', 'category')->orderBy('id', 'desc')->paginate(6),
+        ]);
     }
 
     public function create()
@@ -45,13 +48,27 @@ class PostController extends Controller
         //     'body' =>' required|min:3'
         // ]);
         // $attr = $this->validateRequest();
+        $request->validate([
+            'thumbnail' => 'image|mimes:jpeg,png,jpg,svg|max:2048'
+        ]);
 
         $attr = $request->all();
+        $slug =\Str::slug(request('title'));
+        
+        $thumbnail = request()->file('thumbnail');
+        if ($thumbnail) {
+            $thumbnailUrl = $thumbnail->store("images/posts");
+        }else{
+            $thumbnailUrl='';
+        }
+        // $thumbnailUrl = $thumbnail->storeAs("images/posts", "{$slug}.{$thumbnail->extension()}");
 
-        $attr['slug'] = \Str::slug(request('title'));
+        $attr['slug'] = $slug;
         $attr['category_id'] = request('category');
+        $attr['thumbnail'] = $thumbnailUrl;
+        $attr['user_id'] = auth()->id();
 
-        $post = Post::create($attr);
+        $post = auth()->user()->posts()->create($attr);
         $post->tags()->attach(request('tags'));
 
         session()->flash('success', 'The post was created');
@@ -79,9 +96,23 @@ class PostController extends Controller
         //     'body' =>' required|min:3'
         // ]);
         // $attr = $this->validateRequest();
+        $this->authorize('update',$post);
+        
+        $thumbnail = request()->file('thumbnail');
+        if ($thumbnail) {
+            \Storage::delete($post->thumbnail);
+            $thumbnailUrl = $thumbnail->store("images/posts");
+        }else {
+            $thumbnailUrl = $post->thumbnail;
+        }
 
         $attr = $request->all();
-        $attr['category_id'] = request('category');
+        $slug =\Str::slug(request('title'));
+
+
+        $attr['slug'] = $slug;
+        $attr['thumbnail'] = $thumbnailUrl;
+
         $post->update($attr);
         $post->tags()->sync(request('tags'));
 
@@ -91,10 +122,16 @@ class PostController extends Controller
 
     public function destroy(Post $post)
     {
-        $post->tags()->detach();
-        $post->delete();
-        session()->flash('success', 'The post was deleted');
-        return redirect('posts');
+        if(auth()->user()->is($post->author)){
+            $post->tags()->detach();
+            $post->delete();
+            \Storage::delete($post->thumbnail);
+            session()->flash('success', 'The post was deleted');
+            return redirect('posts');
+        }else {
+            session()->flash('error', "it wasn't your post");
+            return redirect('posts');
+        }
     }
 
     // public function validateRequest()

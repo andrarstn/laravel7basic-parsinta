@@ -28,6 +28,7 @@
         @include('layouts.navigation')
 
         <main class="py-4">
+            @yield('alert')
             @yield('content')
         </main>
     </div>
